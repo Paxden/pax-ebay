@@ -48,7 +48,7 @@ function Supplier() {
       </div>
 
       <div className="supplier-container p-1 rounded shadow border w-75">
-        <div className="supplier-links d-flex align-items-center gap-3">
+        <div className="supplier-links text-truncate d-flex align-items-center gap-3">
           <NavLink>
             <p className="active">Draft</p>
           </NavLink>
