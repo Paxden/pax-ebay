@@ -33,6 +33,7 @@ import Automation from "./Component/Settings/Automation";
 import Keywords from "./Component/Settings/Keywords";
 import Notifications from "./Component/Settings/Notifications";
 import Store from "./Component/Settings/Store";
+import Home from "./Home/Home";
 
 function App() {
   return (
@@ -73,6 +74,8 @@ function App() {
             <Route path="store" element={<Store />} />
           </Route>
         </Route>
+
+        <Route path="/home" element={<Home />} />
       </Routes>
     </>
   );

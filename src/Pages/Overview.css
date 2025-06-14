@@ -276,6 +276,7 @@
 }
 
 
+
 /* Responsiveness */
 @media (max-width: 768px) {
 
@@ -346,26 +347,29 @@
         grid-template-columns: repeat(2, 1fr);
     }
 
-    .products-container{
+    .products-container {
         height: 50vh;
         overflow-y: auto;
     }
 
-    .drafts-container{
+    .drafts-container {
         height: 77vh;
         overflow-y: auto;
     }
 
-    .variation{
+    .variation {
         width: 150px;
     }
 
-    .revised-listing-table{
+    .revised-listing-table {
         width: 430px;
         overflow: scroll;
     }
 
-    .side-tab, .store-container, .supplier-container, .setting-card{
+    .side-tab,
+    .store-container,
+    .supplier-container,
+    .setting-card {
         width: 100% !important;
     }
 }
