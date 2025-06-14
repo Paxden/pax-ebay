@@ -47,7 +47,7 @@ function SideBar({ isOpen }) {
       <div className="brand">
         <div className="logo d-flex align-items-center justify-content-center">
           <div className="circle bg-primary"></div>
-          <div className="glass p-1 text-dark text-center h5">AutoSync </div>
+          <Link to='/home' className="glass p-1 text-dark text-center h5">AutoSync </Link>
         </div>
         <Button variant="primary" onClick={handleShowAddStore}>
           Add Store
