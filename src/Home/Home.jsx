@@ -173,7 +173,7 @@ function Home() {
           </Link>
         </div>
 
-        <div className="cta d-none d-md-block">
+        <Link to="/auth/login" className="cta d-none d-md-block">
           <button className="cssbuttons-io-button">
             Get started
             <div className="icon">
@@ -191,7 +191,7 @@ function Home() {
               </svg>
             </div>
           </button>
-        </div>
+        </Link>
       </nav>
 
       {/* Hero Section */}
