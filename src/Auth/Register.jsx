@@ -1,15 +1,25 @@
 import React from "react";
 
+import { useNavigate } from "react-router-dom";
+
 // Libraries
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faLock, faMobile, faUser } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEnvelope,
+  faLock,
+  faMobile,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 function Register() {
+  const navigate = useNavigate();
   return (
     <div>
       <h3 className="text-center m-0">Create an Account</h3>
-      <p className="text-center text-secondary">Please fill in the details to register</p>
+      <p className="text-center text-secondary">
+        Please fill in the details to register
+      </p>
       <form className="mx-5">
         <div className="row justify-content-between">
           <div className="mb-3 col-12 col-md-6">
@@ -122,17 +132,15 @@ function Register() {
           </div>
         </div>
         <div className="w-100 d-flex justify-content-center">
-          <button type="submit" className="btn mt-1 btn-primary w-50 mx-auto">
+          <button
+            onClick={() => navigate("/dashboard")}
+            type="submit"
+            className="btn mt-1 btn-primary w-50 mx-auto"
+          >
             Sign up
           </button>
         </div>
-        <div className="social mt-3">
-          <div className="d-flex justify-content-center gap-3">
-            <button className="btn btn-sm btn-outline-primary">
-              <i className="fab fa-google me-3"></i> Sign up with Google
-            </button>
-          </div>
-        </div>
+
         <p className="text-center mt-3">
           Already have an account? <a href="/auth/login">Sign in here</a>
         </p>

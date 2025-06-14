@@ -46,7 +46,7 @@ function App() {
         </Route>
 
         {/* Main Application */}
-        <Route path="/" element={<Overview />}>
+        <Route path="/dashboard" element={<Overview />}>
           <Route index element={<Dashboard />} />
           <Route path="trending-product" element={<TrendingProduct />} />
           <Route path="drafts" element={<Drafts />}>
@@ -75,7 +75,7 @@ function App() {
           </Route>
         </Route>
 
-        <Route path="/home" element={<Home />} />
+        <Route path="/" element={<Home />} />
       </Routes>
     </>
   );

@@ -2,6 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import "./Home.css";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { useNavigate } from "react-router-dom";
 
 import ScrollReveal from "scrollreveal";
 import { NavLink } from "react-router-dom";
@@ -20,6 +21,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 function Home() {
+  const navigate = useNavigate();
+
   useEffect(() => {
     // Bottom
     ScrollReveal().reveal(".reveal-bottom", {
@@ -173,8 +176,11 @@ function Home() {
           </Link>
         </div>
 
-        <Link to="/auth/login" className="cta d-none d-md-block">
-          <button className="cssbuttons-io-button">
+        <div to="/auth/login" className="cta d-none d-md-block">
+          <button
+            onClick={() => navigate("/auth/login")}
+            className="cssbuttons-io-button"
+          >
             Get started
             <div className="icon">
               <svg
@@ -191,7 +197,7 @@ function Home() {
               </svg>
             </div>
           </button>
-        </Link>
+        </div>
       </nav>
 
       {/* Hero Section */}
@@ -206,7 +212,10 @@ function Home() {
               orders, and streamline your workflow.
             </p>
             <div className="btns d-flex gap-3">
-              <button className="btn btn-primary btn-lg mt-3">
+              <button
+                onClick={() => navigate("/auth/login")}
+                className="btn btn-primary btn-lg mt-3"
+              >
                 Get Started Now
               </button>
               <button className="btn btn-secondary btn-lg mt-3">
@@ -360,7 +369,9 @@ function Home() {
         style={{ backgroundColor: "#000", color: "#fff", padding: "4rem 0" }}
       >
         <Container>
-          <h2 className="text-center reveal-top fs-2 mb-5 text-light">💰 Pricing Plans</h2>
+          <h2 className="text-center reveal-top fs-2 mb-5 text-light">
+            💰 Pricing Plans
+          </h2>
           <Row className="g-4">
             {plans.map((plan, i) => (
               <Col key={i} md={4}>
@@ -449,7 +460,11 @@ function Home() {
             Start your free trial and experience how AutoSync can scale your
             online business.
           </p>
-          <Button size="lg" variant="outline-light">
+          <Button
+            onClick={() => navigate("/auth/login")}
+            size="lg"
+            variant="outline-light"
+          >
             Get Started Free
           </Button>
         </Container>

@@ -1,5 +1,7 @@
 import React from "react";
 
+import { useNavigate } from "react-router-dom";
+
 // Libraries
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock, faUser } from "@fortawesome/free-solid-svg-icons";
@@ -9,6 +11,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import ForgetPasswordModal from "./ForgetPasswordModal";
 
 function Login() {
+  const navigate = useNavigate();
   return (
     <div>
       <h3 className="text-center m-0">Welcome Back</h3>
@@ -57,16 +60,14 @@ function Login() {
           </div>
           <ForgetPasswordModal />
         </div>
-        <button type="submit" className="btn mt-2 btn-primary w-100">
+        <button
+          onClick={() => navigate("/dashboard")}
+          type="submit"
+          className="btn mt-2 btn-primary w-100"
+        >
           Sign in
         </button>
-        <div className="social mt-3">
-          <div className="d-flex justify-content-center gap-3">
-            <button className="btn btn-outline-primary">
-              <i className="fab fa-google me-3"></i> Sign in with Google
-            </button>
-          </div>
-        </div>
+
         <p className="text-center mt-3">
           Don't have an account? <a href="/auth/register">Sign up here</a>
         </p>

@@ -2,6 +2,8 @@ import React from "react";
 import { Outlet } from "react-router-dom";
 import "./Auth.css";
 
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+
 // Libraries
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -33,12 +35,14 @@ function Auth() {
           <Outlet />
         </div>
       </div>
-      <div className="right-container d-none d-md-block">
-        <div className="d-flex right align-items-center justify-content-center">
-          <div className="logo d-flex align-items-center justify-content-center">
-            <div className="circle bg-primary"></div>
-            <div className="glass p-4 text-light text-center h5"> AutoSync</div>
-          </div>
+      <div className="right-container d d-none d-md-block">
+        <div className="lottie">
+          <DotLottieReact
+            className="w-100 play"
+            src="https://lottie.host/3a0fceed-8cd4-443e-bb4b-ac6bfdc58199/ZIiHjqdF0I.lottie"
+            loop
+            autoplay
+          />
         </div>
       </div>
     </div>
