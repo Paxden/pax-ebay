@@ -1,26 +1,62 @@
 import React from "react";
+import { useState } from "react";
+import axios from "axios";
 
-import { useNavigate } from "react-router-dom";
 
 // Libraries
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faEnvelope,
-  faLock,
-  faMobile,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope, faLock, faUser } from "@fortawesome/free-solid-svg-icons";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 function Register() {
-  const navigate = useNavigate();
+  // State to manage form data
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    password_confirmation: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    try {
+      const res = await axios.post(
+        "https://api.ebaydropshipping.com/v1/auth/register",
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setMessage(res.data.message || "Registration successful");
+    } catch (err) {
+      const msg = err.response?.data?.message || "Registration failed";
+      setMessage(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <h3 className="text-center m-0">Create an Account</h3>
       <p className="text-center text-secondary">
         Please fill in the details to register
       </p>
-      <form className="mx-5">
+      {message && <p className="alert alert-info">{message}</p>}
+      <form onSubmit={handleSubmit} className="mx-5">
         <div className="row justify-content-between">
           <div className="mb-3 col-12 col-md-6">
             <label htmlFor="fullname" className="form-label">
@@ -32,29 +68,15 @@ function Register() {
               </span>
               <input
                 type="text"
+                name="name"
                 className="form-control"
                 placeholder="Enter your fullname"
                 id="fullname"
                 aria-label="Fullname"
                 aria-describedby="basic-addon1"
-              />
-            </div>
-          </div>
-          <div className="mb-3 col-12 col-md-6">
-            <label htmlFor="username" className="form-label">
-              Username
-            </label>
-            <div className="input-group mb-3">
-              <span className="input-group-text" id="basic-addon1">
-                <FontAwesomeIcon icon={faUser} />
-              </span>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Enter your username"
-                id="username"
-                aria-label="Username"
-                aria-describedby="basic-addon1"
+                value={formData.name}
+                onChange={handleChange}
+                required
               />
             </div>
           </div>
@@ -73,24 +95,10 @@ function Register() {
                 id="email"
                 aria-label="Email"
                 aria-describedby="basic-addon1"
-              />
-            </div>
-          </div>
-          <div className="mb-3 col-12 col-md-6">
-            <label htmlFor="phoneNumber" className="form-label">
-              Phone Number
-            </label>
-            <div className="input-group mb-3">
-              <span className="input-group-text" id="basic-addon1">
-                <FontAwesomeIcon icon={faMobile} />
-              </span>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Enter your Phone Number"
-                id="phoneNumber"
-                aria-label="Phone Number"
-                aria-describedby="basic-addon1"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
               />
             </div>
           </div>
@@ -109,6 +117,10 @@ function Register() {
                 id="password"
                 aria-label="Password"
                 aria-describedby="basic-addon1"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
               />
             </div>
           </div>
@@ -127,17 +139,22 @@ function Register() {
                 id="confirmPassword"
                 aria-label="Confirm Password"
                 aria-describedby="basic-addon1"
+                name="password_confirmation"
+                value={formData.password_confirmation}
+                onChange={handleChange}
+                required
               />
             </div>
           </div>
         </div>
         <div className="w-100 d-flex justify-content-center">
           <button
-            onClick={() => navigate("/dashboard")}
+            // onClick={() => navigate("/dashboard")}
             type="submit"
+            disabled={loading}
             className="btn mt-1 btn-primary w-50 mx-auto"
           >
-            Sign up
+            {loading ? "Registering..." : "Register"}
           </button>
         </div>
 

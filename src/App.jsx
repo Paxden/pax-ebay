@@ -34,6 +34,7 @@ import Keywords from "./Component/Settings/Keywords";
 import Notifications from "./Component/Settings/Notifications";
 import Store from "./Component/Settings/Store";
 import Home from "./Home/Home";
+import OnboardingSteps from "./Pages/Onboarding/OnboardingSteps";
 
 function App() {
   return (
@@ -43,7 +44,10 @@ function App() {
         <Route path="auth" element={<Auth />}>
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="onboarding" element={<OnboardingSteps />} />
         </Route>
+
+        {/* Onboarding */}
 
         {/* Main Application */}
         <Route path="/dashboard" element={<Overview />}>
