@@ -1,69 +1,131 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { Form } from "react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faEllipsisVertical,
-  faMagnifyingGlass,
-} from "@fortawesome/free-solid-svg-icons";
+import { Form, Spinner, Alert } from "react-bootstrap";
+import axios from "axios";
 
-function AddStoreModal({ show, handleClose }) {
+const API_BASE_URL = "https://autosync.site/api";
+const EBAY_CLIENT_ID = "NOORNISH-ASAPMART-PRD-60e92398a-30b58e2b";
+const REDIRECT_URI = "https://quanby.com.ng";
+const EBAY_SCOPE = "https://api.ebay.com/oauth/api_scope";
+
+function AddStoreModal({ show, handleClose, token, onStoreConnected }) {
+  const platform = "ebay"; // fixed for now
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleConnectStore = () => {
+    setError(null);
+
+    const ebayAuthUrl = `https://auth.ebay.com/oauth2/authorize?client_id=${EBAY_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+      REDIRECT_URI
+    )}&response_type=code&scope=${encodeURIComponent(EBAY_SCOPE)}`;
+
+    window.location.href = ebayAuthUrl; // Redirect to eBay OAuth
+  };
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
+
+    if (!code) return;
+
+    const connectStore = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const payload = {
+          platform,
+          auth_code: code,
+          store_name: "MyEbayStore", // You can make this dynamic later
+        };
+
+        const response = await axios.post(
+          `${API_BASE_URL}/stores/connect`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (onStoreConnected) {
+          onStoreConnected(response.data.data.store.store_name);
+        }
+
+        // ✅ Clear code from URL only after success
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
+      } catch (err) {
+        console.error(
+          "Store connection failed:",
+          err.response?.data || err.message
+        );
+        setError(
+          "Failed to connect store. Check your credentials or try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    connectStore();
+  }, [token, onStoreConnected]);
+
   return (
-    <div className="add-store-modal">
-      <Modal centered show={show} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <Form className="d-flex align-items-center gap-3 rounded-5 px-4  py-2 border w-75">
-              <FontAwesomeIcon
-                className="fa-sm text-secondary "
-                icon={faMagnifyingGlass}
-              />
-              <input
-                className="border-0 "
-                type="search"
-                placeholder="Search anything"
-              />
-            </Form>
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="d-flex align-items-center justify-content-between">
-            <p>Tiktok(1)</p>
-            <div className="text-primary text-sm">Unselect all</div>
-          </div>
-          <div className="d-flex align-items-center justify-content-between my-3">
-            <div className="d-flex gap-3 align-items-center justify-content-between">
-              <div className="d-flex gap-3 align-items-center">
-                <Form.Check />
-                <img
-                  src="https://via.placeholder.com/40"
-                  alt="Product thumbnail"
-                  width="40"
-                  height="40"
-                  className="rounded"
-                />
-                <div>
-                  <h6 className="mb-0">Store Name</h6>
-                  <small>Description goes here</small>
-                </div>
-              </div>
-            </div>
-            <FontAwesomeIcon className="text-right" icon={faEllipsisVertical} />
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="d-flex gap-5 justify-content-between">
-            <Button variant="secondary" onClick={handleClose}>
-              Add Store
-            </Button>
-            <Button variant="warning" onClick={handleClose}>
-              Save Changes
-            </Button>
-          </div>
-        </Modal.Footer>
-      </Modal>
-    </div>
+    <Modal centered show={show} onHide={handleClose}>
+      <Modal.Header closeButton>
+        <Modal.Title>Add a New Store</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form>
+          <Form.Group className="mb-3">
+            <Form.Label>Select Platform</Form.Label>
+            <Form.Select disabled value="ebay">
+              <option value="ebay">eBay</option>
+            </Form.Select>
+          </Form.Group>
+        </Form>
+
+        {error && (
+          <Alert variant="danger" className="mt-3">
+            {error}
+          </Alert>
+        )}
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={handleClose} disabled={loading}>
+          Cancel
+        </Button>
+        <Button
+          variant="primary"
+          onClick={handleConnectStore}
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+              />{" "}
+              Connecting...
+            </>
+          ) : (
+            "Connect eBay Store"
+          )}
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }
 

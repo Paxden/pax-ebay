@@ -26,10 +26,19 @@ import SingleProduct from "../Modal/SingleProduct";
 import MultipleProduct from "../Modal/MultipleProduct";
 
 function SideBar({ isOpen }) {
+  // State for modals
   const [showAddStore, setShowAddStore] = useState(false);
   const [showSingleProduct, setShowSingleProduct] = useState(false);
   const [showMultipleProduct, setShowMultipleProduct] = useState(false);
 
+  const [storeName, setStoreName] = useState(null);
+
+  const handleStoreConnected = (name) => {
+    setStoreName(name);
+    setShowAddStore(false);
+  };
+
+  const token = localStorage.getItem("token");
   // Add store
   const handleShowAddStore = () => setShowAddStore(true);
   const handleCloseAddStore = () => setShowAddStore(false);
@@ -47,16 +56,24 @@ function SideBar({ isOpen }) {
       <div className="brand">
         <div className="logo d-flex align-items-center justify-content-center">
           <div className="circle bg-primary"></div>
-          <Link to='/' className="glass p-1 text-dark text-center h5">AutoSync </Link>
+          <Link to="/" className="glass p-1 text-dark text-center h5">
+            AutoSync{" "}
+          </Link>
         </div>
         <Button variant="primary" onClick={handleShowAddStore}>
-          Add Store
+          {storeName ? storeName : "Add Store"}
         </Button>
+
+        <AddStoreModal
+          show={showAddStore}
+          handleClose={handleCloseAddStore}
+          token={token}
+          onStoreConnected={handleStoreConnected}
+        />
       </div>
 
       <div className="links">
         {/* Modals */}
-        <AddStoreModal show={showAddStore} handleClose={handleCloseAddStore} />
         <SingleProduct
           show={showSingleProduct}
           handleClose={handleCloseSingleProduct}

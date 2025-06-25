@@ -35,6 +35,8 @@ import Notifications from "./Component/Settings/Notifications";
 import Store from "./Component/Settings/Store";
 import Home from "./Home/Home";
 import OnboardingSteps from "./Pages/Onboarding/OnboardingSteps";
+import EbayCallback from "./Auth/EbayCallBack";
+import PrivacyPolicy from "./Pages/PrivacyPolicy";
 
 function App() {
   return (
@@ -43,6 +45,7 @@ function App() {
         {/* Authentication */}
         <Route path="auth" element={<Auth />}>
           <Route path="login" element={<Login />} />
+          <Route path="ebay/callback" element={<EbayCallback />} />
           <Route path="register" element={<Register />} />
           <Route path="onboarding" element={<OnboardingSteps />} />
         </Route>
@@ -50,7 +53,7 @@ function App() {
         {/* Onboarding */}
 
         {/* Main Application */}
-        <Route path="/dashboard" element={<Overview />}>
+        <Route path="/" element={<Overview />}>
           <Route index element={<Dashboard />} />
           <Route path="trending-product" element={<TrendingProduct />} />
           <Route path="drafts" element={<Drafts />}>
@@ -79,7 +82,8 @@ function App() {
           </Route>
         </Route>
 
-        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       </Routes>
     </>
   );

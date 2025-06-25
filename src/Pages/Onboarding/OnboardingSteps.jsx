@@ -65,7 +65,7 @@ function OnboardingSteps() {
 
       exchangeToken();
     }
-  }, [location.search]);
+  }, [location.search, ebayConnected]);
 
   const handleNext = () => {
     if (step < 5) setStep(step + 1);

@@ -1,15 +1,13 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
-
-
-// Libraries
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faLock, faUser } from "@fortawesome/free-solid-svg-icons";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
-  // State to manage form data
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -19,19 +17,22 @@ function Register() {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrors({});
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+    setErrors({});
 
     try {
       const res = await axios.post(
-        "https://api.ebaydropshipping.com/v1/auth/register",
+        "https://autosync.site/api/auth/register",
         formData,
         {
           headers: {
@@ -40,10 +41,17 @@ function Register() {
         }
       );
 
-      setMessage(res.data.message || "Registration successful");
+      setMessage(
+        res.data.message || "Registration successful. Check your email."
+      );
+      setTimeout(() => navigate("/onboarding"), 2000);
     } catch (err) {
-      const msg = err.response?.data?.message || "Registration failed";
-      setMessage(msg);
+      if (err.response?.status === 422) {
+        setErrors(err.response.data.errors || {});
+        setMessage(err.response.data.message || "Validation failed.");
+      } else {
+        setMessage("Registration failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -55,15 +63,21 @@ function Register() {
       <p className="text-center text-secondary">
         Please fill in the details to register
       </p>
-      {message && <p className="alert alert-info">{message}</p>}
+
+      {message && (
+        <p className="alert alert-info text-center p-1 mt-2 w-50 mx-auto">
+          {message}
+        </p>
+      )}
+
       <form onSubmit={handleSubmit} className="mx-5">
         <div className="row justify-content-between">
           <div className="mb-3 col-12 col-md-6">
             <label htmlFor="fullname" className="form-label">
               Full Name
             </label>
-            <div className="input-group mb-3">
-              <span className="input-group-text" id="basic-addon1">
+            <div className="input-group mb-1">
+              <span className="input-group-text">
                 <FontAwesomeIcon icon={faUser} />
               </span>
               <input
@@ -71,75 +85,75 @@ function Register() {
                 name="name"
                 className="form-control"
                 placeholder="Enter your fullname"
-                id="fullname"
-                aria-label="Fullname"
-                aria-describedby="basic-addon1"
                 value={formData.name}
                 onChange={handleChange}
                 required
               />
             </div>
+            {errors.name && (
+              <small className="text-danger">{errors.name[0]}</small>
+            )}
           </div>
+
           <div className="mb-3 col-12 col-md-6">
             <label htmlFor="email" className="form-label">
               Email
             </label>
-            <div className="input-group mb-3">
-              <span className="input-group-text" id="basic-addon1">
+            <div className="input-group mb-1">
+              <span className="input-group-text">
                 <FontAwesomeIcon icon={faEnvelope} />
               </span>
               <input
                 type="email"
+                name="email"
                 className="form-control"
                 placeholder="Enter your email"
-                id="email"
-                aria-label="Email"
-                aria-describedby="basic-addon1"
-                name="email"
                 value={formData.email}
                 onChange={handleChange}
                 required
               />
             </div>
+            {errors.email && (
+              <small className="text-danger">{errors.email[0]}</small>
+            )}
           </div>
+
           <div className="mb-3 col-12 col-md-6">
             <label htmlFor="password" className="form-label">
               Password
             </label>
-            <div className="input-group mb-3">
-              <span className="input-group-text" id="basic-addon1">
+            <div className="input-group mb-1">
+              <span className="input-group-text">
                 <FontAwesomeIcon icon={faLock} />
               </span>
               <input
                 type="password"
+                name="password"
                 className="form-control"
                 placeholder="Enter your password"
-                id="password"
-                aria-label="Password"
-                aria-describedby="basic-addon1"
-                name="password"
                 value={formData.password}
                 onChange={handleChange}
                 required
               />
             </div>
+            {errors.password && (
+              <small className="text-danger">{errors.password[0]}</small>
+            )}
           </div>
+
           <div className="mb-3 col-12 col-md-6">
             <label htmlFor="confirmPassword" className="form-label">
               Confirm Password
             </label>
-            <div className="input-group mb-3">
-              <span className="input-group-text" id="basic-addon1">
+            <div className="input-group mb-1">
+              <span className="input-group-text">
                 <FontAwesomeIcon icon={faLock} />
               </span>
               <input
                 type="password"
+                name="password_confirmation"
                 className="form-control"
                 placeholder="Confirm your password"
-                id="confirmPassword"
-                aria-label="Confirm Password"
-                aria-describedby="basic-addon1"
-                name="password_confirmation"
                 value={formData.password_confirmation}
                 onChange={handleChange}
                 required
@@ -147,9 +161,9 @@ function Register() {
             </div>
           </div>
         </div>
+
         <div className="w-100 d-flex justify-content-center">
           <button
-            // onClick={() => navigate("/dashboard")}
             type="submit"
             disabled={loading}
             className="btn mt-1 btn-primary w-50 mx-auto"
