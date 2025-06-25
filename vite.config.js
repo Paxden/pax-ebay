@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   server: {
-    allowedHosts: ["casinos-give-preferences-require.trycloudflare.com"],
+    allowedHosts: ["receives-hint-invitation-deputy.trycloudflare.com"],
   },
   proxy: {
     "/api": "http://casinos-give-preferences-require.trycloudflare.com", // or your Cloudflare tunnel URL

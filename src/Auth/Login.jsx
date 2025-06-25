@@ -3,7 +3,7 @@ import React from "react";
 function Login() {
   const CLIENT_ID = "ADESINAQ-Nextinn-PRD-df037993b-1a54357b";
   const REDIRECT_URI =
-    "https://casinos-give-preferences-require.trycloudflare.com/auth/ebay/callback";
+    "https://receives-hint-invitation-deputy.trycloudflare.com/auth/ebay/callback";
 
   const SCOPES = [
     "https://api.ebay.com/oauth/api_scope",
@@ -57,3 +57,4 @@ function Login() {
 }
 
 export default Login;
+
