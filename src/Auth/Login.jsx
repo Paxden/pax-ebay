@@ -1,43 +1,59 @@
-import React, { useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import React from "react";
 
-function EbayCallback() {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+function Login() {
+  const CLIENT_ID = "ADESINAQ-Nextinn-PRD-df037993b-1a54357b";
+  const REDIRECT_URI =
+    "https://casinos-give-preferences-require.trycloudflare.com/auth/ebay/callback";
 
-  useEffect(() => {
-    const code = searchParams.get("code");
+  const SCOPES = [
+    "https://api.ebay.com/oauth/api_scope",
+    "https://api.ebay.com/oauth/api_scope/sell.marketing.readonly",
+    "https://api.ebay.com/oauth/api_scope/sell.marketing",
+    "https://api.ebay.com/oauth/api_scope/sell.inventory.readonly",
+    "https://api.ebay.com/oauth/api_scope/sell.inventory",
+    "https://api.ebay.com/oauth/api_scope/sell.account.readonly",
+    "https://api.ebay.com/oauth/api_scope/sell.account",
+    "https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly",
+    "https://api.ebay.com/oauth/api_scope/sell.fulfillment",
+    "https://api.ebay.com/oauth/api_scope/sell.analytics.readonly",
+    "https://api.ebay.com/oauth/api_scope/sell.finances",
+    "https://api.ebay.com/oauth/api_scope/sell.payment.dispute",
+    "https://api.ebay.com/oauth/api_scope/commerce.identity.readonly",
+    "https://api.ebay.com/oauth/api_scope/sell.reputation",
+    "https://api.ebay.com/oauth/api_scope/sell.reputation.readonly",
+    "https://api.ebay.com/oauth/api_scope/commerce.notification.subscription",
+    "https://api.ebay.com/oauth/api_scope/commerce.notification.subscription.readonly",
+    "https://api.ebay.com/oauth/api_scope/sell.stores",
+    "https://api.ebay.com/oauth/api_scope/sell.stores.readonly",
+    "https://api.ebay.com/oauth/scope/sell.edelivery",
+    "https://api.ebay.com/oauth/api_scope/commerce.vero",
+  ].join(" ");
 
-    if (!code) {
-      console.error("No code found in URL");
-      return;
-    }
+  const buildEbayAuthURL = () => {
+    const params = new URLSearchParams({
+      client_id: CLIENT_ID,
+      response_type: "code",
+      redirect_uri: REDIRECT_URI,
+      scope: SCOPES,
+    });
 
-    const fetchToken = async () => {
-      try {
-        const res = await axios.post(
-          "https://api.ebaydropshipping.com/api/auth/ebay/callback",
-          { code } // Ensure it's in the body
-        );
+    return `https://auth.ebay.com/oauth2/authorize?${params.toString()}`;
+  };
 
-        const { token, user } = res.data;
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
-        navigate("/dashboard");
-      } catch (err) {
-        console.error("Callback error:", err);
-        alert("Something went wrong during eBay login.");
-      }
-    };
-
-    fetchToken();
-  }, [searchParams, navigate]);
+  const handleLogin = () => {
+    window.location.href = buildEbayAuthURL();
+  };
 
   return (
-    <div className="container py-5 text-center">
-      <h3>Completing eBay login...</h3>
+    <div className="login-page text-center mt-5">
+      <h3>Welcome Back</h3>
+      <p className="text-secondary">Login with eBay to continue</p>
+
+      <button onClick={handleLogin} className="btn btn-primary mt-3">
+        Login with eBay
+      </button>
     </div>
   );
 }
-export default EbayCallback;
+
+export default Login;
