@@ -3,7 +3,7 @@ import React from "react";
 function Login() {
   const CLIENT_ID = "ADESINAQ-Nextinn-PRD-df037993b-1a54357b";
   const REDIRECT_URI =
-    "https://receives-hint-invitation-deputy.trycloudflare.com/auth/ebay/callback";
+    "https://ebay-automation.netlify.app/auth/ebay/callback";
 
   const SCOPES = [
     "https://api.ebay.com/oauth/api_scope",
