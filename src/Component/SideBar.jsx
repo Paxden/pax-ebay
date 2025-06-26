@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Button } from "react-bootstrap";
 
@@ -25,7 +25,17 @@ import AddStoreModal from "../Modal/AddStoreModal";
 import SingleProduct from "../Modal/SingleProduct";
 import MultipleProduct from "../Modal/MultipleProduct";
 
-function SideBar({ isOpen }) {
+function SideBar({ isOpen, token }) {
+  const [storeInfo, setStoreInfo] = useState(null);
+
+  // Load store info from localStorage on component mount
+  useEffect(() => {
+    const storedStore = localStorage.getItem(STORAGE_KEY);
+    if (storedStore) {
+      setStoreInfo(JSON.parse(storedStore));
+    }
+  }, []);
+
   // State for modals
   const [showAddStore, setShowAddStore] = useState(false);
   const [showSingleProduct, setShowSingleProduct] = useState(false);
@@ -36,9 +46,9 @@ function SideBar({ isOpen }) {
   const handleStoreConnected = (name) => {
     setStoreName(name);
     setShowAddStore(false);
+    setStoreInfo(store);
   };
 
-  const token = localStorage.getItem("token");
   // Add store
   const handleShowAddStore = () => setShowAddStore(true);
   const handleCloseAddStore = () => setShowAddStore(false);
@@ -60,15 +70,32 @@ function SideBar({ isOpen }) {
             AutoSync{" "}
           </Link>
         </div>
-        <Button variant="primary" onClick={handleShowAddStore}>
-          {storeName ? storeName : "Add Store"}
-        </Button>
+        {storeInfo ? (
+          <Button variant="outline-success" className="w-100 mb-2">
+            <i
+              className={`bi bi-${
+                storeInfo.platform === "ebay" ? "shop" : "cart"
+              } me-2`}
+            ></i>
+            {storeInfo.name}
+          </Button>
+        ) : (
+          <Button
+            variant="primary"
+            className="w-100 mb-2"
+            onClick={() => setShowModal(true)}
+          >
+            <i className="bi bi-plus-circle me-2"></i>
+            Connect Store
+          </Button>
+        )}
 
         <AddStoreModal
           show={showAddStore}
           handleClose={handleCloseAddStore}
           token={token}
           onStoreConnected={handleStoreConnected}
+          STORAGE_KEY
         />
       </div>
 

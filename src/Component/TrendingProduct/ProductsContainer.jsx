@@ -22,7 +22,7 @@ function ProductsContainer() {
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
 
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("ebay_access_token");
   const productsPerPage = 4;
 
   useEffect(() => {

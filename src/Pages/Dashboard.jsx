@@ -18,12 +18,60 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 const Dashboard = () => {
   const [selectedStore, setSelectedStore] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [ebayToken, setEbayToken] = useState(null);
 
+  // Get both your regular token and eBay tokens
   const token = localStorage.getItem("token");
+  const accessToken = sessionStorage.getItem("ebay_access_token");
+  const refreshToken = sessionStorage.getItem("ebay_refresh_token");
+  const tokenExpiry = parseInt(sessionStorage.getItem("ebay_token_expiry"));
+
+  // Check if eBay token is expired or about to expire (within 5 minutes)
+  const isTokenExpiredOrExpiring = () => {
+    if (!tokenExpiry) return true;
+    const currentTime = Date.now();
+    const bufferTime = 300000; // 5 minutes in milliseconds
+    return currentTime >= (tokenExpiry - bufferTime);
+  };
+
+  // Refresh eBay token if needed
+  const refreshEbayToken = async () => {
+    try {
+      const response = await axios.post(
+        "https://boats-excess-codes-suitable.trycloudflare.com/api/ebay/auth/refresh",
+        { refresh_token: refreshToken }
+      );
+      
+      const newTokenData = response.data;
+      sessionStorage.setItem("ebay_access_token", newTokenData.access_token);
+      sessionStorage.setItem("ebay_refresh_token", newTokenData.refresh_token);
+      sessionStorage.setItem(
+        "ebay_token_expiry",
+        Date.now() + newTokenData.expires_in * 1000
+      );
+      
+      setEbayToken(newTokenData.access_token);
+      return newTokenData.access_token;
+    } catch (error) {
+      console.error("Failed to refresh eBay token:", error);
+      // Handle token refresh failure (e.g., redirect to login)
+      return null;
+    }
+  };
 
   useEffect(() => {
     const fetchStoreData = async () => {
       try {
+        // First check if we need to refresh the eBay token
+        let currentAccessToken = accessToken;
+        if (isTokenExpiredOrExpiring() && refreshToken) {
+          currentAccessToken = await refreshEbayToken();
+          if (!currentAccessToken) {
+            throw new Error("Failed to refresh eBay token");
+          }
+        }
+
+        // Fetch store data with your regular token
         const res = await axios.get("https://autosync.site/api/stores", {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -33,6 +81,7 @@ const Dashboard = () => {
         if (connectedStores.length > 0) {
           const storeId = connectedStores[0].id;
 
+          // Fetch store details with your regular token
           const detailRes = await axios.get(
             `https://autosync.site/api/stores/${storeId}`,
             {
@@ -41,19 +90,37 @@ const Dashboard = () => {
           );
 
           setSelectedStore(detailRes.data.data.store);
+
+          // Example: Fetch eBay-specific data using the eBay token
+          if (currentAccessToken) {
+            const ebayRes = await axios.get(
+              "https://api.ebay.com/sell/inventory/v1/inventory_item",
+              {
+                headers: {
+                  "Authorization": `Bearer ${currentAccessToken}`,
+                  "Content-Type": "application/json"
+                }
+              }
+            );
+            console.log("eBay inventory data:", ebayRes.data);
+          }
         }
       } catch (error) {
         console.error(
           "Error loading store info:",
           error.response?.data || error.message
         );
+        // Handle unauthorized errors (token expired)
+        if (error.response?.status === 401) {
+          // Redirect to login or attempt token refresh
+        }
       } finally {
         setLoading(false);
       }
     };
 
     if (token) fetchStoreData();
-  }, [token]);
+  }, [token, accessToken, refreshToken]);
 
   return (
     <div className="page dashboard row">

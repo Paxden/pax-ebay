@@ -1,50 +1,46 @@
 import React, { useState, useEffect } from "react";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
-import { Form, Spinner, Alert } from "react-bootstrap";
+import { Button, Modal, Form, Spinner, Alert } from "react-bootstrap";
 import axios from "axios";
 
 const API_BASE_URL = "https://autosync.site/api";
-const EBAY_CLIENT_ID = "NOORNISH-ASAPMART-PRD-60e92398a-30b58e2b";
-const REDIRECT_URI = "https://quanby.com.ng";
-const EBAY_SCOPE = "https://api.ebay.com/oauth/api_scope";
+const STORAGE_KEY = "connectedStore";
 
 function AddStoreModal({ show, handleClose, token, onStoreConnected }) {
-  const platform = "ebay"; // fixed for now
-
-  const [loading, setLoading] = useState(false);
+  const [platform, setPlatform] = useState("ebay");
+  const [storeName, setStoreName] = useState("");
+  const [loading, setLoading] = useState({
+    initiating: false,
+    completing: false,
+  });
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
-  const handleConnectStore = () => {
-    setError(null);
-
-    const ebayAuthUrl = `https://auth.ebay.com/oauth2/authorize?client_id=${EBAY_CLIENT_ID}&redirect_uri=${encodeURIComponent(
-      REDIRECT_URI
-    )}&response_type=code&scope=${encodeURIComponent(EBAY_SCOPE)}`;
-
-    window.location.href = ebayAuthUrl; // Redirect to eBay OAuth
-  };
-
+  // Handle OAuth callback when modal opens
   useEffect(() => {
+    if (!show) return;
+
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
+    const state = urlParams.get("state");
 
-    if (!code) return;
+    if (code && state && platform === "ebay") {
+      handleEbayCallback(code, state);
+    }
+  }, [show]);
 
-    const connectStore = async () => {
-      setLoading(true);
-      setError(null);
+  const initiateConnection = async () => {
+    setLoading({ initiating: true, completing: false });
+    setError(null);
+    setSuccess(null);
 
-      try {
-        const payload = {
-          platform,
-          auth_code: code,
-          store_name: "MyEbayStore", // You can make this dynamic later
-        };
-
+    try {
+      if (platform === "ebay") {
+        // Initiate eBay OAuth flow
         const response = await axios.post(
-          `${API_BASE_URL}/stores/connect`,
-          payload,
+          `${API_BASE_URL}/stores/ebay/auth`,
+          {
+            store_name: storeName || "My eBay Store",
+          },
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -53,75 +49,177 @@ function AddStoreModal({ show, handleClose, token, onStoreConnected }) {
           }
         );
 
-        if (onStoreConnected) {
-          onStoreConnected(response.data.data.store.store_name);
+        if (response.data?.auth_url) {
+          // Redirect to eBay authorization page
+          window.location.href = response.data.auth_url;
+        } else {
+          throw new Error("Authentication URL not received");
         }
+      } else {
+        // Handle other platforms (Amazon, Shopify)
+        const response = await axios.post(
+          `${API_BASE_URL}/stores/connect`,
+          {
+            platform,
+            store_name: storeName || `My ${platform} Store`,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-        // ✅ Clear code from URL only after success
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname
-        );
-      } catch (err) {
-        console.error(
-          "Store connection failed:",
-          err.response?.data || err.message
-        );
-        setError(
-          "Failed to connect store. Check your credentials or try again."
-        );
-      } finally {
-        setLoading(false);
+        handleSuccess(response.data?.store);
       }
+    } catch (err) {
+      console.error("Connection error:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to initiate connection. Please try again."
+      );
+    } finally {
+      setLoading({ initiating: false, completing: false });
+    }
+  };
+
+  const handleEbayCallback = async (code, state) => {
+    setLoading({ initiating: false, completing: true });
+    setError(null);
+
+    try {
+      // Get store ID from localStorage or use a default
+      const storedStore = localStorage.getItem(STORAGE_KEY);
+      const storeId = storedStore ? JSON.parse(storedStore).id : 2;
+
+      const response = await axios.get(
+        `${API_BASE_URL}/stores/ebay/callback/${storeId}`,
+        {
+          params: { code, state },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // Clean the URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      handleSuccess(response.data?.store);
+    } catch (err) {
+      console.error("OAuth callback error:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to complete eBay authentication. Please try again."
+      );
+    } finally {
+      setLoading({ initiating: false, completing: false });
+    }
+  };
+
+  const handleSuccess = (storeData) => {
+    // Prepare store info object
+    const storeInfo = {
+      id: storeData?.id || 2,
+      name: storeData?.store_name || storeName || `My ${platform} Store`,
+      platform: platform,
+      connectedAt: new Date().toISOString(),
     };
 
-    connectStore();
-  }, [token, onStoreConnected]);
+    // Save to localStorage
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(storeInfo));
+
+    // Show success message
+    setSuccess(`${platform} store connected successfully!`);
+
+    // Close modal and notify parent after delay
+    setTimeout(() => {
+      if (onStoreConnected) {
+        onStoreConnected(storeInfo);
+      }
+      handleClose();
+    }, 2000);
+  };
 
   return (
     <Modal centered show={show} onHide={handleClose}>
       <Modal.Header closeButton>
-        <Modal.Title>Add a New Store</Modal.Title>
+        <Modal.Title>Connect {platform} Store</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form>
           <Form.Group className="mb-3">
-            <Form.Label>Select Platform</Form.Label>
-            <Form.Select disabled value="ebay">
+            <Form.Label>Platform</Form.Label>
+            <Form.Select
+              value={platform}
+              onChange={(e) => setPlatform(e.target.value)}
+              disabled={loading.initiating || loading.completing}
+            >
               <option value="ebay">eBay</option>
+              <option value="amazon">Amazon</option>
+              <option value="shopify">Shopify</option>
             </Form.Select>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Store Name</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder={`My ${platform} Store`}
+              value={storeName}
+              onChange={(e) => setStoreName(e.target.value)}
+              disabled={loading.initiating || loading.completing}
+            />
           </Form.Group>
         </Form>
 
         {error && (
           <Alert variant="danger" className="mt-3">
+            <i className="bi bi-exclamation-triangle-fill me-2"></i>
             {error}
           </Alert>
         )}
+
+        {success && (
+          <Alert variant="success" className="mt-3">
+            <i className="bi bi-check-circle-fill me-2"></i>
+            {success}
+          </Alert>
+        )}
+
+        {(loading.initiating || loading.completing) && (
+          <div className="text-center my-3">
+            <Spinner animation="border" variant="primary" />
+            <p className="mt-2">
+              {loading.completing
+                ? "Completing eBay authentication..."
+                : "Initiating connection..."}
+            </p>
+          </div>
+        )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose} disabled={loading}>
+        <Button
+          variant="secondary"
+          onClick={handleClose}
+          disabled={loading.initiating || loading.completing || success}
+        >
           Cancel
         </Button>
         <Button
           variant="primary"
-          onClick={handleConnectStore}
-          disabled={loading}
+          onClick={initiateConnection}
+          disabled={loading.initiating || loading.completing || success}
         >
-          {loading ? (
+          {loading.initiating || loading.completing ? (
             <>
-              <Spinner
-                as="span"
-                animation="border"
-                size="sm"
-                role="status"
-                aria-hidden="true"
-              />{" "}
-              Connecting...
+              <Spinner as="span" size="sm" animation="border" />
+              <span className="ms-2">Connecting...</span>
             </>
           ) : (
-            "Connect eBay Store"
+            `Connect ${platform}`
           )}
         </Button>
       </Modal.Footer>
